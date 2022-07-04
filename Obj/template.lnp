@@ -1,0 +1,14 @@
+".\Obj\main.obj",
+".\Obj\ired.obj",
+".\Obj\AT24C02.obj",
+".\Obj\I2C.obj",
+".\Obj\TIMER0.obj",
+".\Obj\TIMER1.obj",
+".\Obj\key .obj",
+".\Obj\lcd1602.obj",
+".\Obj\mkey.obj",
+".\Obj\Delay.obj",
+".\Obj\beep.obj",
+".\Obj\public.obj" 
+TO ".\Obj\template" 
+PRINT(".\Obj\template.m51") RAMSIZE(256) 

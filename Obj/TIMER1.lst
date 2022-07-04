@@ -1,0 +1,112 @@
+C51 COMPILER V9.54   TIMER1                                                                06/30/2022 15:24:00 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE TIMER1
+OBJECT MODULE PLACED IN .\Obj\TIMER1.obj
+COMPILER INVOKED BY: H:\keil51\C51\BIN\C51.EXE TIMER1.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\App\24c02;.\App\iic;.\App\key;
+                    -.\App\smg;.\Public;.\App\ds18b20;.\App\ds1302;.\App\ired;.\App\time;.\App\xpt2046;.\App\pwm;.\App\lcd1602) DEBUG OBJECTE
+                    -XTEND PRINT(.\Obj\TIMER1.lst) TABS(2) OBJECT(.\Obj\TIMER1.obj)
+
+line level    source
+
+   1          #include "TIMER1.h"
+   2          
+   3          //变量定义
+   4          u8 gmsec=0;//ms级定义
+   5          u8 gsec=22;//秒定义
+   6          u8 gmin=6;//分定义
+   7          u8 gshi=9;
+   8          u8 year=22;
+   9          u8 mouth=2;
+  10          u8  day=28;
+  11          /*******************************************************************************
+  12          * 函 数 名       : time0_init
+  13          * 函数功能     : 定时器0中断配置函数，通过设置TH和TL即可确定定时时间
+  14          * 输    入       : 无
+  15          * 输    出       : 无
+  16          *******************************************************************************/
+  17          void TIMER1_init(void)
+  18          {
+  19   1        TMOD|=0X10;//选择为定时器0模式，工作方式1
+  20   1        TH1=0XDC; //给定时器赋初值，定时10ms
+  21   1        TL1=0X00; 
+  22   1        ET1=1;//打开定时器1中断允许
+  23   1        EA=1;//打开总中断
+  24   1        TR1=0;//关闭定时器    
+  25   1      }
+  26          
+  27          /*******************************************************************************
+  28          * 函 数 名       : time0_start
+  29          * 函数功能     : 定时器0打开
+  30          * 输    入       : 无
+  31          * 输    出       : 无
+  32          *******************************************************************************/
+  33          void Timer1_start(void)
+  34          {
+  35   1        TR1=1;//打开定时器  
+  36   1      }
+  37          
+  38          /*******************************************************************************
+  39          * 函 数 名       : time0_stop
+  40          * 函数功能     : 定时器0关闭
+  41          * 输    入       : 无
+  42          * 输    出       : 无
+  43          *******************************************************************************/
+  44          void Timer1_stop(void)
+  45          {
+  46   1        TR1=0;//关闭定时器
+  47   1        TH1=0X00;
+  48   1        TL1=0X00; 
+  49   1      }
+  50          
+  51          void Timer1() interrupt 3 //定时器0中断函数
+  52          {
+  53   1        TH1=0XDC; //给定时器赋初值，定时10ms
+C51 COMPILER V9.54   TIMER1                                                                06/30/2022 15:24:00 PAGE 2   
+
+  54   1        TL1=0X00;
+  55   1        gmsec++;//10ms加1次
+  56   1        if(gmsec==100)//定时1秒
+  57   1        {
+  58   2          gmsec=0;
+  59   2          gsec++;//对秒计数
+  60   2          if(gsec==60)//到达60秒，即1分钟
+  61   2          {
+  62   3            gsec=0;
+  63   3            gmin++;//对分计数
+  64   3            if(gmin==60)
+  65   3              {gmin=0;
+  66   4               gshi++;
+  67   4               if(gshi==24) 
+  68   4               {  gshi =0;  
+  69   5                    day++;
+  70   5                  if((year%4)==0&&mouth==2&&day>29){day=1;mouth++;}
+  71   5                  else if((year%4)!=0&&mouth==2&&day>28){day=1;mouth++;}
+  72   5                  else  if((mouth==1||mouth==3||mouth==5||mouth==7||mouth==8||mouth==10)&&day>31){day=1;mouth++;}
+  73   5                  else if((mouth==4||mouth==6||mouth==9||mouth==11)&&day>30){day=1;mouth++;}
+  74   5                  else  if(mouth==12&&day>31){mouth=1;day=1;year++;}
+  75   5                  
+  76   5              }
+  77   4            }
+  78   3          }
+  79   2        }
+  80   1      }
+  81            
+  82                  
+  83                  
+  84                  
+  85                  
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    242    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      7    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

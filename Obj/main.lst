@@ -1,0 +1,433 @@
+C51 COMPILER V9.54   MAIN                                                                  06/30/2022 15:23:59 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Obj\main.obj
+COMPILER INVOKED BY: H:\keil51\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\App\24c02;.\App\iic;.\App\k
+                    -ey;.\App\smg;.\Public;.\App\ds18b20;.\App\ds1302;.\App\ired;.\App\time;.\App\xpt2046;.\App\pwm;.\App\lcd1602) DEBUG OBJE
+                    -CTEXTEND PRINT(.\Obj\main.lst) TABS(2) OBJECT(.\Obj\main.obj)
+
+line level    source
+
+   1          #include "public.h"
+   2          #include "lcd1602.h"
+   3          #include "key.h"
+   4          #include "Timer0.h"
+   5          #include "TImer1.h"
+   6          #include "mkey.h"
+   7          #include "ired.h"
+   8          #include "string.h"
+   9          #include "beep.h"
+  10          #include "AT24C02.h"
+  11          #define sjia    0x08
+  12          #define sjian   0x1C
+  13          #define fjia    0x42
+  14          #define fjian   0x52
+  15           char choice=0,choice2=0,choice3=0;
+  16          unsigned char KeyValue;
+  17          unsigned char key;
+  18          unsigned char shan=0;
+  19          unsigned char mode=0;
+  20          unsigned char ok=0;
+  21          unsigned char temp=0;
+  22          unsigned char keynum,Runflag;
+  23          unsigned char timeSetSelect,timeSetFlashFlag,Value;
+  24          unsigned char time[11];
+  25          unsigned char ctime[11];
+  26          unsigned char timec[9];
+  27          char  w;
+  28          u8 time_buf[9];
+  29          u8 ired_tempx=0;
+  30          u8 cshi=8;//ms级定义
+  31          u8 csec=10;//秒定义
+  32          u8 cmin=17;//分定义
+  33          u8 cyear=22;
+  34          u8 cmouth=6;
+  35          u8  cday=29;
+  36          /*******************************************************************************
+  37          * 函 数 名       : main
+  38          * 函数功能     : 主函数
+  39          * 输    入       : 无
+  40          * 输    出       : 无
+  41          *******************************************************************************/
+  42          void set()
+  43          { 
+  44   1      
+  45   1      if(choice==1&&shan==1&&choice2!=1&&choice2!=2&&choice3==0)
+  46   1      {
+  47   2        lcd1602_show_string(0,0," ");
+  48   2        
+  49   2      }
+  50   1      
+  51   1      if(choice==2&&shan==1&&choice2!=1&&choice2!=2&&choice3==0)
+  52   1      {
+  53   2      lcd1602_show_string(0,1," ");
+C51 COMPILER V9.54   MAIN                                                                  06/30/2022 15:23:59 PAGE 2   
+
+  54   2      
+  55   2      } 
+  56   1      
+  57   1      if(choice==2&&shan==1&&choice2==2&&choice2!=1&&choice3==0)
+  58   1      {
+  59   2      lcd1602_show_string(0,1," ");}
+  60   1      
+  61   1      if(choice==1&&shan==1&&choice2==1&&choice2!=2&&choice3==0)
+  62   1      {
+  63   2      lcd1602_show_string(0,0," ");}
+  64   1      
+  65   1        if(choice==1&&shan==1&&choice2==2&&choice2!=1&&choice3==0)
+  66   1      {
+  67   2      lcd1602_show_string(0,0," ");}
+  68   1      
+  69   1      if(choice ==2&&shan==1&&choice2==1&&choice2!=2&&choice3==0)
+  70   1      {
+  71   2      lcd1602_show_string(0,1," ");}
+  72   1      
+  73   1      if(choice==1&&choice2==2&&shan!=1&&choice3==0){lcd1602_show_string(0,0,"1.Scloc");lcd1602_show_string(0,1,
+             -"2.Salar");}
+  74   1      if(choice==2&&choice2==2&&shan!=1&&choice3==0){lcd1602_show_string(0,0,"1.Scloc");lcd1602_show_string(0,1,
+             -"2.Salar");}
+  75   1      
+  76   1      if (choice==1&&choice2==1&&shan!=1&&choice3==0){lcd1602_show_string(0,0,"1.clock");lcd1602_show_string(0,1
+             -,"2.alarm");}
+  77   1      if (choice==2&&choice2==1&&shan!=1&&choice3==0){lcd1602_show_string(0,0,"1.clock");lcd1602_show_string(0,1
+             -,"2.alarm");}
+  78   1      if(choice3!=1&&choice3!=2&&choice2!=1&&choice2!=2&&shan!=1)
+  79   1      {
+  80   2        lcd1602_show_string(0,0,"1.ShowT");
+  81   2      lcd1602_show_string(0,1,"2.SettT");
+  82   2      }
+  83   1      }
+  84          
+  85          
+  86          
+  87          
+  88          void showtime()
+  89          {
+  90   1        u8 temp,temp1;
+  91   1        u8  W[4];
+  92   1        
+  93   1        if(mouth==1)
+  94   1        {temp=mouth;temp1=year;
+  95   2          mouth=13;year=year-1;
+  96   2        w=(day+2*mouth+3*(mouth+1)/5+year+year/4-year/100+year/400)%7;
+  97   2        mouth=temp;year=temp1;}
+  98   1        if(mouth==2)
+  99   1        {temp=mouth;temp1=year;
+ 100   2          mouth=14;year=year-1;
+ 101   2        w=(day+2*mouth+3*(mouth+1)/5+year+year/4-year/100+year/400)%7;
+ 102   2        mouth=temp;year=temp1;}
+ 103   1        else w=(day+2*mouth+3*(mouth+1)/5+year+year/4-year/100+year/400)%7;
+ 104   1        time_buf[0]=gshi/10+0x30;
+ 105   1          time_buf[1]=gshi%10+0x30;//分
+ 106   1          time_buf[2]=':';//-
+ 107   1          time_buf[3]=gmin/10+0x30;
+ 108   1          time_buf[4]=gmin%10+0x30;//秒
+ 109   1          time_buf[5]=':';//-
+ 110   1          time_buf[6]=gsec/10+0x30;
+ 111   1          time_buf[7]=gsec%10+0x30;//毫秒
+C51 COMPILER V9.54   MAIN                                                                  06/30/2022 15:23:59 PAGE 3   
+
+ 112   1          time_buf[8]='\0';
+ 113   1        time[0]=2+0x30;
+ 114   1        time[1]=0+0x30;
+ 115   1        time[2]=year/10+0x30;
+ 116   1        time[3]=year%10+0x30;
+ 117   1        time[4]='-';
+ 118   1        time[5]=mouth/10+0x30;
+ 119   1        time[6]=mouth%10+0x30;
+ 120   1        time[7]='-';
+ 121   1        time[8]=day/10+0x30;
+ 122   1        time[9]=day%10+0x30;
+ 123   1        time[10]='\0';
+ 124   1        W[2]=w+0x31;
+ 125   1        W[0]=0x57;
+ 126   1        W[1]=':';
+ 127   1        W[3]='\0';
+ 128   1      lcd1602_show_string(0,0,time);
+ 129   1        lcd1602_show_string(0,1,time_buf);
+ 130   1        lcd1602_show_string(12,0,W);
+ 131   1      }
+ 132          
+ 133          
+ 134          void showclock()
+ 135          {
+ 136   1        ctime[0]=2+0x30;
+ 137   1        ctime[1]=0+0x30;
+ 138   1        ctime[2]=cyear/10+0x30;
+ 139   1        ctime[3]=cyear%10+0x30;
+ 140   1        ctime[4]='-';
+ 141   1        ctime[5]=cmouth/10+0x30;
+ 142   1        ctime[6]=cmouth%10+0x30;
+ 143   1        ctime[7]='-';
+ 144   1        ctime[8]=cday/10+0x30;
+ 145   1        ctime[9]=cday%10+0x30;
+ 146   1        ctime[10]='\0';
+ 147   1        timec[0]=cshi/10+0x30;
+ 148   1          timec[1]=cshi%10+0x30;//分
+ 149   1          timec[2]=':';//-
+ 150   1          timec[3]=cmin/10+0x30;
+ 151   1          timec[4]=cmin%10+0x30;//秒
+ 152   1          timec[5]=':';//-
+ 153   1          timec[6]=csec/10+0x30;
+ 154   1          timec[7]=csec%10+0x30;//毫秒
+ 155   1          timec[8]='\0';
+ 156   1        lcd1602_show_string(12,0,"C"); 
+ 157   1        lcd1602_show_string(0,0,ctime); 
+ 158   1        lcd1602_show_string(0,1,timec);
+ 159   1      } 
+ 160            
+ 161            void init()
+ 162            {gshi=AT24C02_ReadByte(0);
+ 163   1        gmin=AT24C02_ReadByte(1);
+ 164   1        gsec=AT24C02_ReadByte(2);
+ 165   1          year=AT24C02_ReadByte(3);
+ 166   1        mouth=AT24C02_ReadByte(4);
+ 167   1        day=AT24C02_ReadByte(5);
+ 168   1        }
+ 169            
+ 170            void init1()
+ 171            {
+ 172   1          AT24C02_WriteByte(0,gshi);
+ 173   1          delay_ms(5);
+C51 COMPILER V9.54   MAIN                                                                  06/30/2022 15:23:59 PAGE 4   
+
+ 174   1          AT24C02_WriteByte(1,gmin);
+ 175   1          delay_ms(5);
+ 176   1          AT24C02_WriteByte(2,gsec);
+ 177   1          delay_ms(5);
+ 178   1          AT24C02_WriteByte(3,year);
+ 179   1          delay_ms(5);
+ 180   1          AT24C02_WriteByte(4,mouth);
+ 181   1          delay_ms(5);
+ 182   1          AT24C02_WriteByte(5,day);
+ 183   1          delay_ms(5);
+ 184   1        }
+ 185          
+ 186          void panduan()
+ 187          { 
+ 188   1      if(key==KEY1_PRESS){choice++;}
+ 189   1      if(key==KEY4_PRESS){
+ 190   2      if(choice2==2&&mode==0)choice2=0;else choice2--; 
+ 191   2      if(mode==1||mode==2||mode==3||mode==4)lcd1602_show_string(0,0,"                   ");lcd1602_show_string(0,1,
+             -"             ");mode=0;
+ 192   2      }
+ 193   1      if(choice2<=0){choice2=0;}
+ 194   1      if(choice3<=0){choice3=0;}
+ 195   1      if(key==KEY3_PRESS){
+ 196   2        if(choice2!=1&&choice2!=2&&choice==1&&shan==1)choice2=1;
+ 197   2        if(choice2!=1&&choice2!=2&&choice==2&&shan==1)choice2=2;
+ 198   2        
+ 199   2      }
+ 200   1      if(key==KEY2_PRESS)
+ 201   1        { 
+ 202   2          if(choice==1&&choice2==1)mode=1;
+ 203   2          if(choice==1&&choice2==2)mode=2;
+ 204   2          if(choice==2&&choice2==1)mode=3;
+ 205   2          if(choice==2&&choice2==2)mode=4;
+ 206   2        }
+ 207   1        
+ 208   1      if(choice>2){choice=0;}
+ 209   1      if(choice2>2){choice=0;}
+ 210   1      if(mode>4){mode=0;}
+ 211   1      if((year==cyear)&&(gshi==cshi)&&(gmin==cmin)&&(gsec==csec)&&(mouth==cmouth)&&(day==cday))
+ 212   1      {beep_alarm(100000,10);}
+ 213   1            
+ 214   1      }
+ 215              
+ 216              
+ 217           void settime()
+ 218           {Value=MatrixKey();
+ 219   1          switch(Value)
+ 220   1                  {
+ 221   2                        case 1:gshi++;if(gshi>=24)gshi=0;Value=0;delay_ms(10); break;
+ 222   2                        case 2:if(gshi==0)gshi=24;gshi--;Value=0;delay_ms(10); break;
+ 223   2                        case 3:gmin++;if(gmin>=60)gmin=0;Value=0;delay_ms(10); break;
+ 224   2                        case 4:if(gmin==0)gmin=60;gmin--;Value=0;delay_ms(10); break;
+ 225   2                        case 5:year++;if(year>=100)year=0;Value=0;delay_ms(10); break;
+ 226   2                        case 6:if(year==0)year=100;year--;Value=0;delay_ms(10); break;
+ 227   2                        case 7:mouth++;if(mouth==13){year++;mouth=1;day=1;}Value=0;delay_ms(10); break;
+ 228   2                        case 8:if(mouth==1)mouth=13;mouth--;Value=0;delay_ms(10); break;
+ 229   2                        case 9:day++;if((year%4)==0&&mouth==2&&day>29){mouth++;day=1;} 
+ 230   2                                  if(mouth==12&&day>31){mouth=1;day=1;year++;}
+ 231   2                                  if(day>=32){mouth++;day=1;}
+ 232   2                                   if((mouth==4||mouth==6||mouth==9||mouth==11)&&day>30){day=1;mouth++;}
+ 233   2      if((year%4)!=0&&mouth==2&&day>28){mouth++;day=1;}Value=0;delay_ms(10); break;
+ 234   2                        case 10:if(day==1)day=32;day--;Value=0;delay_ms(10); break;
+C51 COMPILER V9.54   MAIN                                                                  06/30/2022 15:23:59 PAGE 5   
+
+ 235   2                        default:break;
+ 236   2                        }
+ 237   1       if(ired_tempx==sjia)//如果是第一键按下
+ 238   1          {
+ 239   2            gired_data[2]=0;//清零,等待下次按键按下
+ 240   2            gshi++;
+ 241   2            if(gshi>=24)gshi=0;
+ 242   2          }
+ 243   1          else if(ired_tempx==sjian)//如果是第一键按下
+ 244   1          {
+ 245   2            gired_data[2]=0;//清零,等待下次按键按下
+ 246   2            if(gshi==0)gshi=24;gshi--;
+ 247   2          }
+ 248   1          else if(ired_tempx==fjia)//如果是第一键按下
+ 249   1          {
+ 250   2            gired_data[2]=0;//清零,等待下次按键按下
+ 251   2            gmin++;
+ 252   2          if(gmin>=60)gmin=0;
+ 253   2            
+ 254   2          }
+ 255   1          else if(ired_tempx==fjian)//如果是第一键按下
+ 256   1          {
+ 257   2            gired_data[2]=0;//清零,等待下次按键按下
+ 258   2            if(gmin==0)gmin=60; gmin--;}
+ 259   1          }
+ 260          void csettime()
+ 261           {Value=MatrixKey();
+ 262   1          switch(Value)
+ 263   1                  {
+ 264   2                      
+ 265   2                        case 1:cshi++;if(cshi>=24)cshi=0;Value=0;delay_ms(10); break;
+ 266   2                        case 2:if(cshi==0)cshi=24;cshi--;Value=0;delay_ms(10); break;
+ 267   2                        case 3:cmin++;if(cmin>=60)cmin=0;Value=0;delay_ms(10); break;
+ 268   2                        case 4:if(cmin==0)cmin=60;cmin--;Value=0;delay_ms(10); break;
+ 269   2                        case 5:cyear++;if(cyear>=100)cyear=0;Value=0;delay_ms(10); break;
+ 270   2                        case 6:if(cyear==0)cyear=100;cyear--;Value=0;delay_ms(10); break;
+ 271   2                        case 7:cmouth++;if(cmouth==13){cyear++;cmouth=1;cday=1;}Value=0;delay_ms(10); break;
+ 272   2                        case 8:if(cmouth==1)cmouth=13;cmouth--;Value=0;delay_ms(10); break;
+ 273   2                        case 9:cday++;if((cyear%4)==0&&cmouth==2&&cday>29){cmouth++;cday=1;} 
+ 274   2                                  if(cmouth==12&&cday>31){cmouth=1;cday=1;cyear++;}
+ 275   2                                  if(cday>=32){cmouth++;cday=1;}
+ 276   2                                   if((cmouth==4||cmouth==6||cmouth==9||cmouth==11)&&cday>30){cday=1;cmouth++;}
+ 277   2      if((cyear%4)!=0&&cmouth==2&&cday>28){cmouth++;cday=1;}Value=0;delay_ms(10); break;
+ 278   2                        case 10:if(cday==1)cday=32;cday--;Value=0;delay_ms(10); break;
+ 279   2                        default:break;
+ 280   2                        }   
+ 281   1       if(ired_tempx==sjia)//如果是第一键按下
+ 282   1          {
+ 283   2            gired_data[2]=0;//清零,等待下次按键按下
+ 284   2            cshi++;
+ 285   2            if(cshi>=24)cshi=0;
+ 286   2          }
+ 287   1          else if(ired_tempx==sjian)//如果是第一键按下
+ 288   1          {
+ 289   2            gired_data[2]=0;//清零,等待下次按键按下
+ 290   2            if(cshi==0)cshi=24;cshi--;
+ 291   2          }
+ 292   1          else if(ired_tempx==fjia)//如果是第一键按下
+ 293   1          {
+ 294   2            gired_data[2]=0;//清零,等待下次按键按下
+ 295   2            cmin++;
+ 296   2          if(cmin>=60)cmin=0;
+C51 COMPILER V9.54   MAIN                                                                  06/30/2022 15:23:59 PAGE 6   
+
+ 297   2            
+ 298   2          }
+ 299   1          else if(ired_tempx==fjian)//如果是第一键按下
+ 300   1          {
+ 301   2            gired_data[2]=0;//清零,等待下次按键按下
+ 302   2            if(cmin==0)cmin=60; cmin--;}
+ 303   1          }
+ 304          void main()
+ 305          { unsigned char MatrixKey();
+ 306   1        init();
+ 307   1        lcd1602_init();//LCD1602初始化
+ 308   1        Timer0_init();
+ 309   1        Timer1_init();
+ 310   1        Timer0_start();
+ 311   1        Timer1_start();
+ 312   1        ired_init();
+ 313   1        
+ 314   1        while(1)
+ 315   1        {   ired_tempx=gired_data[2];
+ 316   2          
+ 317   2          panduan();
+ 318   2        init1();
+ 319   2          key = key_scan(0);
+ 320   2                    
+ 321   2                        
+ 322   2                        switch(mode)
+ 323   2                        { case 0:set(); break;  
+ 324   3                          case 2:showtime();settime();break;
+ 325   3                          case 1:showtime();break;
+ 326   3                          case 3:showclock();break;
+ 327   3                          case 4:showclock();csettime();break;
+ 328   3                        }
+ 329   2                              
+ 330   2          
+ 331   2          
+ 332   2          
+ 333   2        } 
+ 334   1        
+ 335   1      }
+ 336            
+ 337          
+ 338          
+ 339          
+ 340          
+ 341          
+ 342          
+ 343          
+ 344          
+ 345          
+ 346          
+ 347          
+ 348          
+ 349          
+ 350          
+ 351          
+ 352          
+ 353          
+ 354          
+ 355          
+ 356          
+ 357          
+ 358          
+C51 COMPILER V9.54   MAIN                                                                  06/30/2022 15:23:59 PAGE 7   
+
+ 359          
+ 360          
+ 361          
+ 362          
+ 363          
+ 364          
+ 365          
+ 366          
+ 367          
+ 368          
+ 369          
+ 370          
+ 371          
+ 372          
+ 373          
+ 374          
+ 375          
+ 376          
+ 377          void Timer0_Routine() interrupt 1 
+ 378          {
+ 379   1        static unsigned int i=0;
+ 380   1        TH0=0xDC;//给定时器赋初值，定时10ms
+ 381   1        TL0=0x00;
+ 382   1        i++;
+ 383   1        
+ 384   1        if (i >= 500)
+ 385   1        {
+ 386   2          i = 0;
+ 387   2          shan = !shan;
+ 388   2          
+ 389   2          
+ 390   2        }
+ 391   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2550    ----
+   CONSTANT SIZE    =     83    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     64       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
